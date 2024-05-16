@@ -5,24 +5,52 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Todo flask application</title>
+    <title>Todo Flask Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .top-right form {
+            display: inline;
+        }
+    </style>
 </head>
 <body>
 
+<div class="top-right">
+    {% if session.get('user_login') %}
+    <form action="{{ url_for('logout') }}" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    {% else %}
+    <form action="{{ url_for('login') }}" method="get">
+        <button type="submit">Login</button>
+    </form>
+    {% endif %}
+</div>
+
 {% for message in get_flashed_messages() %}
-<p> {{ message }} </p>
+<p>{{ message }}</p>
 {% endfor %}
 
 <ol>
     {% for todo in todo_list %}
     <li>{{ todo }}
-        <form
-                action="{{ url_for('delete_task', task_id=loop.index) }}"
-                method="POST">
+        <form action="{{ url_for('delete_task', task_id=loop.index) }}" method="POST" style="display:inline;">
             <input type="submit" value="delete">
         </form>
     </li>
     {% endfor %}
 </ol>
+
+<form action="{{ url_for('add_task') }}" method="get">
+    <button type="submit">Add Task</button>
+</form>
+
 </body>
 </html>

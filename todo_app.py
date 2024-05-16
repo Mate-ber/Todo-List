@@ -1,6 +1,6 @@
 import json
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'anything'
@@ -23,6 +23,7 @@ def get():
 
 
 todo_list = get()
+users = {'m': {'password': '1234', 'name': 'Zviadi'}}
 
 # app.config('secret_key') = 'sad'
 
@@ -32,9 +33,40 @@ def save_to_file():
         json.dump(todo_list, f)
 
 
+def check_password(login, password):
+    return users.get(login) and users[login]['password'] == password
+
+
 @app.route('/')
 def index():
+    if not session.get('user_login'):
+        return redirect(url_for('login'))
     return render_template('index.html', todo_list=todo_list)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if session.get('user_login'):
+        flash('You are already logged in!')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        login = request.form.get('login')
+        password = request.form.get('password')
+
+        if check_password(login, password):
+            session['user_login'] = login
+            return redirect(url_for('index'))
+        else:
+            flash('User login failed.')
+    return render_template('login.html')
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_login', None)
+    flash('You have been logged out.')
+    return redirect(url_for('login'))
 
 
 @app.route('/add', methods=['GET', 'POST'])
